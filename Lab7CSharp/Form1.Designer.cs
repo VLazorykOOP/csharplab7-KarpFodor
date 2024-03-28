@@ -1,68 +1,110 @@
-﻿
+﻿using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Windows.Forms;
+
 namespace Lab7CSharp
 {
-    partial class Form1
+    partial class Form1 : Form
     {
-        /// <summary>
-        /// Обязательная переменная конструктора.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private CircularPanel rotatingPanel;
+        private Panel movingPanel;
+        private Timer timerRotation;
+        private Timer timerMovement;
+        private Random random;
 
-        /// <summary>
-        /// Освободить все используемые ресурсы.
-        /// </summary>
-        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
-        protected override void Dispose(bool disposing)
+        private float rotationAngle = 0.0f;
+        private int rotatingPanelRadius = 120;
+
+        private void InitializeTimers()
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
+            timerRotation = new Timer();
+            timerRotation.Interval = 50;
+            timerRotation.Tick += timerRotation_Tick;
+
+            timerMovement = new Timer();
+            timerMovement.Interval = 50;
+            timerMovement.Tick += timerMovement_Tick;
+
+            random = new Random();
         }
 
-        #region Код, автоматически созданный конструктором форм Windows
+        private void InitializeRotatingPanel()
+        {
+            rotatingPanel = new CircularPanel();
+            rotatingPanel.Size = new Size(100, 100);
+            rotatingPanel.Location = new Point((ClientSize.Width - rotatingPanel.Width) / 2, (ClientSize.Height - rotatingPanel.Height) / 2);
+            rotatingPanel.BackColor = Color.Transparent; // Set background to transparent
 
-        /// <summary>
-        /// Требуемый метод для поддержки конструктора — не изменяйте 
-        /// содержимое этого метода с помощью редактора кода.
-        /// </summary>
+            Controls.Add(rotatingPanel);
+        }
+
+        private void InitializeMovingPanel()
+        {
+            movingPanel = new Panel();
+            movingPanel.Size = new Size(50, 50);
+            movingPanel.BackColor = GetRandomColor();
+
+            Controls.Add(movingPanel);
+        }
+
+        private void timerRotation_Tick(object sender, EventArgs e)
+        {
+            rotationAngle += 0.1f;
+
+            // Розраховуємо нові координати панелі для переміщення відносно обертального кола
+            int x = rotatingPanel.Location.X + rotatingPanel.Width / 2 + (int)(rotatingPanelRadius * Math.Cos(rotationAngle));
+            int y = rotatingPanel.Location.Y + rotatingPanel.Height / 2 + (int)(rotatingPanelRadius * Math.Sin(rotationAngle));
+            movingPanel.Location = new Point(x - movingPanel.Width / 2, y - movingPanel.Height / 2);
+
+            rotatingPanel.BackColor = GetRandomColor();
+            movingPanel.BackColor = GetRandomColor();
+
+            Invalidate();
+        }
+
+        private void timerMovement_Tick(object sender, EventArgs e)
+        {
+            // Переміщення панелі обертання на випадкову відстань відносно поточного положення форми
+            rotatingPanel.Location = new Point(
+                 (rotatingPanel.Location.X + random.Next(2 * 5 + 1) - 5 + ClientSize.Width) % ClientSize.Width,
+                 (rotatingPanel.Location.Y + random.Next(2 * 5 + 1) - 5 + ClientSize.Height) % ClientSize.Height
+             );
+        }
+
+        private Color GetRandomColor()
+        {
+            return Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
+        }
+
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
-            this.SuspendLayout();
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.Color.PaleGreen;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.World, ((byte)(204)));
-            this.label1.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label1.Location = new System.Drawing.Point(376, -1);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(95, 18);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Lab 7.   C# ";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // Form1
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1067, 386);
-            this.Controls.Add(this.label1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(500, 500);
+
+            this.Text = "Task1";
             this.ResumeLayout(false);
             this.PerformLayout();
 
+            InitializeTimers();
+            InitializeRotatingPanel();
+            InitializeMovingPanel();
+
+            timerRotation.Start();
+            timerMovement.Start();
         }
 
-        #endregion
+    }
 
-        private System.Windows.Forms.Label label1;
+    public class CircularPanel : Panel
+    {
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            GraphicsPath graphicsPath = new GraphicsPath();
+            graphicsPath.AddEllipse(0, 0, this.Width, this.Height);
+            this.Region = new Region(graphicsPath);
+        }
     }
 }
-

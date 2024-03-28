@@ -8,15 +8,31 @@ namespace Lab7CSharp
 {
     static class Program
     {
-        /// <summary>
-        /// Главная точка входа для приложения.
-        /// </summary>
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            Form1 form1 = new Form1();
+            form1.FormClosed += (sender, e) => OpenForm2();
+            Application.Run(form1);
+        }
+
+        static void OpenForm2()
+        {
+
+            Form2 form2 = new Form2();
+            form2.Load += (sender, e) => {};
+            form2.FormClosed += (sender, e) => OpenForm3();
+            form2.ShowDialog(); 
+        }
+        static void OpenForm3()
+        {
+
+            Form3 form3 = new Form3();
+            form3.Load += (sender, e) => {};
+            form3.ShowDialog(); 
         }
     }
 }
